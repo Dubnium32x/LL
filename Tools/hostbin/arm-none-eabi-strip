@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+# Route ARM strip calls to host when running inside Flatpak VS Code.
+if [ -n "$FLATPAK_ID" ] && command -v flatpak-spawn >/dev/null 2>&1; then
+  exec flatpak-spawn --host arm-none-eabi-strip "$@"
+fi
+exec arm-none-eabi-strip "$@"
