@@ -42,6 +42,11 @@ void Visual_ResetManager(VisualManager* manager) {
 	manager->duration = 0.0f;
 	manager->elapsed = 0.0f;
 	manager->active = false;
+	manager->shakeIntensity = 0.0f;
+	manager->shakeDuration = 0.0f;
+	manager->shakeTimer = 0.0f;
+	manager->shakeOffsetX = 0;
+	manager->shakeOffsetY = 0;
 }
 
 void Visual_InitManager(VisualManager* manager) {
@@ -49,12 +54,32 @@ void Visual_InitManager(VisualManager* manager) {
 }
 
 void Visual_UpdateManager(VisualManager* manager, f32 deltaTime) {
-	if (manager == NULL || !manager->active) return;
+	if (manager == NULL) return;
 
-	manager->elapsed += MaxF(0.0f, deltaTime);
-	if (manager->elapsed >= manager->duration) {
-		manager->elapsed = manager->duration;
-		manager->active = false;
+	// Fade update
+	if (manager->active) {
+		manager->elapsed += MaxF(0.0f, deltaTime);
+		if (manager->elapsed >= manager->duration) {
+			manager->elapsed = manager->duration;
+			manager->active = false;
+		}
+	}
+
+	// Shake update
+	if (manager->shakeTimer > 0.0f) {
+		manager->shakeTimer -= MaxF(0.0f, deltaTime);
+		if (manager->shakeTimer <= 0.0f) {
+			manager->shakeTimer = 0.0f;
+			manager->shakeOffsetX = 0;
+			manager->shakeOffsetY = 0;
+		} else {
+			// Calculate decaying intensity
+			f32 currentIntensity = manager->shakeIntensity * (manager->shakeTimer / manager->shakeDuration);
+			i32 maxOffset = (i32)currentIntensity;
+			if (maxOffset < 1) maxOffset = 1;
+			manager->shakeOffsetX = (rand() % (maxOffset * 2 + 1)) - maxOffset;
+			manager->shakeOffsetY = (rand() % (maxOffset * 2 + 1)) - maxOffset;
+		}
 	}
 }
 
@@ -123,4 +148,23 @@ void Visual_DrawFade(const VisualManager* manager) {
 	LCDPattern pattern;
 	Visual_BuildFadePattern(amount, manager->color, pattern);
 	pd->graphics->fillRect(0, 0, SCR_W, SCR_H, (LCDColor)pattern);
+}
+
+void Visual_StartShake(VisualManager* manager, f32 intensity, f32 duration) {
+	if (manager == NULL) return;
+	manager->shakeIntensity = intensity;
+	manager->shakeDuration = MaxF(0.001f, duration);
+	manager->shakeTimer = manager->shakeDuration;
+}
+
+void Visual_ApplyShakeOffset(const VisualManager* manager) {
+	if (manager == NULL || pd == NULL) return;
+	if (manager->shakeOffsetX != 0 || manager->shakeOffsetY != 0) {
+		pd->graphics->setDrawOffset(manager->shakeOffsetX, manager->shakeOffsetY);
+	}
+}
+
+void Visual_ClearShakeOffset(void) {
+	if (pd == NULL) return;
+	pd->graphics->setDrawOffset(0, 0);
 }

@@ -6,6 +6,7 @@
 #include "animation.h"
 #include "audio.h"
 #include "caric.h"
+#include "fmv.h"
 #include "input.h"
 #include "screen.h"
 #include "text.h"

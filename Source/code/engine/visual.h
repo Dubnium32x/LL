@@ -20,6 +20,13 @@ typedef struct {
 	f32 duration;
 	f32 elapsed;
 	bool active;
+
+	// Screen Shake
+	f32 shakeIntensity;
+	f32 shakeDuration;
+	f32 shakeTimer;
+	i32 shakeOffsetX;
+	i32 shakeOffsetY;
 } VisualManager;
 
 extern VisualManager visualManager;
@@ -38,4 +45,9 @@ void Visual_StopFade(VisualManager* manager);
 bool Visual_IsFadeActive(const VisualManager* manager);
 f32 Visual_GetFadeProgress(const VisualManager* manager);
 void Visual_DrawFade(const VisualManager* manager);
+
+// Screen Shake API
+void Visual_StartShake(VisualManager* manager, f32 intensity, f32 duration);
+void Visual_ApplyShakeOffset(const VisualManager* manager);
+void Visual_ClearShakeOffset(void);
 

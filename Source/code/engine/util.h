@@ -290,3 +290,5 @@ static inline u16 String_CompareIgnoreCase(cstr str1, cstr str2) {
 #define IMAGE_PATH TEXTURE_PATH "image/"
 
 #define FONT_PATH ASSETS_PATH "font/"
+
+#define FMV_PATH ASSETS_PATH "fmv/"

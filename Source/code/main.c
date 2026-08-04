@@ -10,6 +10,8 @@
 #include "pd_api.h"
 #include <engine/engine_core.h>
 #include <game/screens/test_screen.h>
+#include <game/screens/cutscene.h>
+#include <game/screens/test_screen2.h>
 
 PlaydateAPI* pd = NULL;
 LCDFont* fontFamily[4] = {0};
@@ -46,6 +48,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
         InitAudio();
         InitInput();
         
+        Visual_InitManager(&visualManager);
         ScreenManager_Init(&screenManager);
 
         RegisterScreen(&screenManager,
@@ -55,7 +58,21 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
                        TestScreen_Draw,
                        TestScreen_Unload);
 
-        SwitchScreen(&screenManager, SS_TEST_1);
+        RegisterScreen(&screenManager,
+                       SS_CUTSCENE,
+                       CutsceneScreen_Init,
+                       CutsceneScreen_Update,
+                       CutsceneScreen_Draw,
+                       CutsceneScreen_Unload);
+
+        RegisterScreen(&screenManager,
+                       SS_TEST_2,
+                       TestScreen2_Init,
+                       TestScreen2_Update,
+                       TestScreen2_Draw,
+                       TestScreen2_Unload);
+
+        SwitchScreen(&screenManager, SS_TEST_2);
 
         pd->system->setUpdateCallback(Update, NULL);
     }
