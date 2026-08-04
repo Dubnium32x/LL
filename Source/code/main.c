@@ -12,6 +12,7 @@
 #include <game/screens/test_screen.h>
 #include <game/screens/cutscene.h>
 #include <game/screens/test_screen2.h>
+#include <game/screens/world_test.h>
 
 PlaydateAPI* pd = NULL;
 LCDFont* fontFamily[4] = {0};
@@ -72,7 +73,14 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
                        TestScreen2_Draw,
                        TestScreen2_Unload);
 
-        SwitchScreen(&screenManager, SS_TEST_2);
+        RegisterScreen(&screenManager,
+                       SS_TEST_WORLD,
+                       WorldTestScreen_Init,
+                       WorldTestScreen_Update,
+                       WorldTestScreen_Draw,
+                       WorldTestScreen_Unload);
+
+        SwitchScreen(&screenManager, SS_TEST_WORLD);
 
         pd->system->setUpdateCallback(Update, NULL);
     }

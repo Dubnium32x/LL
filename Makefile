@@ -38,7 +38,7 @@ $(shell mkdir -p Source)
 $(shell if [ -f pdxinfo ]; then cp -f pdxinfo Source/; fi)
 
 # Ensure ARM tool wrappers are visible first in PATH (important inside Flatpak VS Code).
-export PATH := $(abspath Tools/hostbin):$(PATH)
+# export PATH := $(abspath Tools/hostbin):$(PATH)
 
 # ============================
 #	Source Config

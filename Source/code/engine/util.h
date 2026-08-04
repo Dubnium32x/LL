@@ -69,6 +69,12 @@ typedef const char* cstr;
 
 #define BPB 8 // bits per byte
 
+#define FONT_PATH "assets/font/"
+#define TEXTURE_PATH "assets/texture/"
+#define DATA_PATH "assets/data/"
+#define AUDIO_PATH "assets/audio/"
+#define FMV_PATH "assets/fmv/"
+
 #define DIV2 0.5
 #define DIV4 0.25
 #define DIV8 0.125

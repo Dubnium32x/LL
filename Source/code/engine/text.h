@@ -31,18 +31,18 @@ static inline void LoadFonts(PlaydateAPI* pd) {
     if (!pd) return;
 
     const char* err = NULL;
-    fontFamily[0] = pd->graphics->loadFont(FONT_PATH "octosale.regular.fnt", &err);
+    fontFamily[0] = pd->graphics->loadFont("assets/font/octosale.regular", &err);
     if (fontFamily[0] == NULL && err) LOG("LoadFonts: %s", err);
 
     err = NULL;
-    fontFamily[1] = pd->graphics->loadFont(FONT_PATH "resmont.light.fnt", &err);
+    fontFamily[1] = pd->graphics->loadFont("assets/font/resmont.light", &err);
     if (fontFamily[1] == NULL && err) LOG("LoadFonts: %s", err);
 
     err = NULL;
-    fontFamily[2] = pd->graphics->loadFont(FONT_PATH "sonic-hud-life.fnt", &err);
+    fontFamily[2] = pd->graphics->loadFont("assets/font/sonic-hud-life", &err);
     if (fontFamily[2] == NULL && err) LOG("LoadFonts: %s", err);
 
     err = NULL;
-    fontFamily[3] = pd->graphics->loadFont(FONT_PATH "stories-thinking.regular.fnt", &err);
+    fontFamily[3] = pd->graphics->loadFont("assets/font/stories-thinking.regular", &err);
     if (fontFamily[3] == NULL && err) LOG("LoadFonts: %s", err);
 }

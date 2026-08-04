@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
-# Route ARM GCC calls to host when running inside Flatpak VS Code.
-if [ -n "$FLATPAK_ID" ] && command -v flatpak-spawn >/dev/null 2>&1; then
-  exec flatpak-spawn --host arm-none-eabi-gcc "$@"
+# Route ARM GCC calls directly or via flatpak-spawn if available.
+if [ -n "$FLATPAK_ID" ]; then
+  if command -v flatpak-spawn >/dev/null 2>&1; then
+    exec flatpak-spawn --host arm-none-eabi-gcc "$@"
+  fi
 fi
 exec arm-none-eabi-gcc "$@"
