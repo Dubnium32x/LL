@@ -1,0 +1,9 @@
+name=Lincoln's Labyrinthine
+author=DiSKOdev
+description=A 2D platformer horror for your Playdate!
+bundleID=com.diskodev.lincolns-labyrinthine
+version=0.1.0
+buildNumber=1
+imagePath=
+launchSoundPath=
+contentWarning= This game is not suitable for children and may contain disturbing imagery. Viewer discretion is advised.
