@@ -4,6 +4,7 @@
 
 #include "util.h"
 #include "animation.h"
+#include "asset.h"
 #include "audio.h"
 #include "caric.h"
 #include "fmv.h"

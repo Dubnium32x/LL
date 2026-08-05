@@ -46,3 +46,13 @@ static inline void LoadFonts(PlaydateAPI* pd) {
     fontFamily[3] = pd->graphics->loadFont("assets/font/stories-thinking.regular", &err);
     if (fontFamily[3] == NULL && err) LOG("LoadFonts: %s", err);
 }
+
+static inline u32 GetTextWidth(cstr text, u8 fontFamIndex) {
+    if (!pd || !pd->graphics || !text) return 0;
+    if (fontFamIndex < 0 || fontFamIndex >= 4) return 0;
+
+    LCDFont* font = fontFamily[fontFamIndex];
+    if (!font) return 0;
+
+    return pd->graphics->getTextWidth(font, text, strlen(text), kASCIIEncoding, 0);
+}

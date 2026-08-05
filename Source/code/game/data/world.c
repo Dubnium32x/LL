@@ -11,10 +11,9 @@ void World_Init(PlaydateAPI* pd, World* world, cstr tileTablePath) {
     memset(world, 0, sizeof(World));
 
     if (tileTablePath != NULL) {
-        cstr outErr = NULL;
-        world->tileTable = pd->graphics->loadBitmapTable(tileTablePath, &outErr);
+        world->tileTable = Asset_LoadBitmapTable(tileTablePath);
         if (world->tileTable == NULL) {
-            LOG("World_Init: failed to load tiletable '%s': %s", tileTablePath, outErr ? outErr : "unknown error");
+            LOG("World_Init: failed to load tiletable '%s'", tileTablePath);
         }
     }
 }
@@ -94,7 +93,7 @@ void World_Free(PlaydateAPI* pd, World* world) {
     if (pd == NULL || world == NULL) return;
 
     if (world->tileTable != NULL) {
-        pd->graphics->freeBitmapTable(world->tileTable);
+        Asset_FreeBitmapTable(world->tileTable);
         world->tileTable = NULL;
     }
 
