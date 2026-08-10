@@ -12,10 +12,33 @@ typedef enum {
     LAYER_CENTER,
     LAYER_OBJECTS,
     LAYER_FG,
+    LAYER_COLLISION,
     LAYER_COUNT
 } WorldLayer;
 
-#define WORLD_WIDTH_TILES 24
+typedef enum {
+    COL_NULL        = 0,  // passable (matches PHYSICS_TILE_NULL)
+    COL_HALF_BOTTOM = 1,  // solid lower-half tile
+    COL_SLOPE_UL    = 2,  // 1x1 \ slope, surfY = x
+    COL_SLOPE_UL_LO = 3,  // 1x2 \ lower half
+    COL_SLOPE_UL_HI = 4,  // 1x2 \ upper half
+    COL_SOLID       = 5,  // full block
+    COL_SOLID_DUP   = 6,  // full block (visual duplicate)
+    COL_SLOPE_UR_LO = 7,  // 1x2 / lower half
+    COL_SLOPE_UR_HI = 8,  // 1x2 / upper half
+    COL_SLOPE_UR    = 9,  // 1x1 / slope, surfY = tileSize - x
+    COL_SLOPE_DR_LO = 10, // ceiling slopes — not used for floor physics
+    COL_SLOPE_DR_HI = 11,
+    COL_SLOPE_DR    = 12,
+    COL_SLOPE_DL    = 13,
+    COL_SLOPE_DL_LO = 14,
+    COL_SLOPE_DL_HI = 15,
+    COL_PLATFORM    = 16, // one-way semi-solid, solid from above only
+    COL_EMPTY       = 17, // passable (matches PHYSICS_TILE_EMPTY)
+    COL_TYPE_COUNT
+} CollisionType;
+
+#define WORLD_WIDTH_TILES  24
 #define WORLD_HEIGHT_TILES 13
 
 // remember, TILE_SIZE = 16, so WORLD_WIDTH = 384, WORLD_HEIGHT = 208
@@ -52,6 +75,8 @@ extern World gWorld;
 void World_Init(PlaydateAPI* pd, World* world, cstr tileTablePath);
 bool World_LoadCSV(PlaydateAPI* pd, World* world, cstr layerPaths[LAYER_COUNT]);
 void World_Draw(PlaydateAPI* pd, World* world, i32 cameraX, i32 cameraY);
+void World_DrawLayer(PlaydateAPI* pd, World* world, WorldLayer layer, i32 cameraX, i32 cameraY);
+CollisionType World_GetCollisionType(World* world, i32 tileX, i32 tileY);
 i32 World_GetTile(World* world, WorldLayer layer, u8 x, u8 y);
 void World_Free(PlaydateAPI* pd, World* world);
 

@@ -26,7 +26,8 @@ void WorldTestScreen_Init(void) {
         "assets/data/csv/rooms/room0.csv", // LAYER_BG
         NULL,                              // LAYER_CENTER
         NULL,                              // LAYER_OBJECTS
-        NULL                               // LAYER_FG
+        NULL,                              // LAYER_FG
+        NULL                               // LAYER_COLLISION
     };
 
     if (World_LoadCSV(pd, &gWorld, layerPaths)) {
@@ -64,8 +65,8 @@ void WorldTestScreen_Draw(void) {
     char info2[64];
     snprintf(info1, sizeof(info1), "World CSV Test (room0.csv)");
     snprintf(info2, sizeof(info2), "DPad=Cam (%d,%d) A=Fast B=Test2", camX, camY);
-    DrawText(info1, 10, 10, 2, kColorBlack);
-    DrawText(info2, 10, 30, 2, kColorBlack);
+    DrawText(info1, 10, 10, 4, kColorBlack);
+    DrawText(info2, 10, 30, 4, kColorBlack);
     // Reset draw mode
     pd->graphics->setDrawMode(kDrawModeCopy);
 }

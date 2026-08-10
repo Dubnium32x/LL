@@ -43,7 +43,7 @@ void IntroScreen_Draw(void) {
     // draw a "Press A or B to skip" message at the bottom of the screen
     cstr skipMessage = "Press A or B to skip";
 
-    DrawText(skipMessage, 280, 220, 2, kColorBlack);
+    DrawText(skipMessage, 280, 220, 4, kColorBlack);
 }
 
 void IntroScreen_Unload(void) {

@@ -93,7 +93,7 @@ void SplashScreen_Draw(void) {
     cstr disclaimertextA = "2026 DISKODEV, LLC. ALL RIGHTS RESERVED.";
     cstr disclaimertextB = "Modified PocketMod Player by Nikku4211, licensed under MIT.";
 
-    DrawText(developedByText, (400 - GetTextWidth(developedByText, 2)) / 2, 16, 2, kColorWhite);
+    DrawText(developedByText, (400 - GetTextWidth(developedByText, 4)) / 2, 16, 4, kColorWhite);
     // Draw Lincoln sprite if loaded and visible
     // if (lincolnVisible && lincolnBitmap && lincolnX < 420) {
     //     pd->graphics->drawBitmap(lincolnBitmap, (int)lincolnX, 150, kBitmapUnflipped);

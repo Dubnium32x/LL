@@ -27,6 +27,10 @@ typedef struct {
 	f32 shakeTimer;
 	i32 shakeOffsetX;
 	i32 shakeOffsetY;
+
+        // Static transition
+        f32 staticTimer;
+        f32 staticDuration;
 } VisualManager;
 
 extern VisualManager visualManager;
@@ -50,4 +54,17 @@ void Visual_DrawFade(const VisualManager* manager);
 void Visual_StartShake(VisualManager* manager, f32 intensity, f32 duration);
 void Visual_ApplyShakeOffset(const VisualManager* manager);
 void Visual_ClearShakeOffset(void);
+
+void Visual_TriggerStatic(VisualManager* manager, f32 duration);
+void Visual_DrawStatic(VisualManager* manager);  // draws & ticks down timer
+
+// Screen effects
+typedef enum {
+    VISUAL_EFFECT_WAVE,   // scanline horizontal shift
+    VISUAL_EFFECT_GRAIN,  // pixel dilation + noise (puffy)
+} VisualEffectType;
+
+void Visual_BeginEffect(void);
+void Visual_EndEffect(void);
+void Visual_DrawEffect(VisualEffectType type, f32 level, f32 time);
 

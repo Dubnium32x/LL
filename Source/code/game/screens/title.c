@@ -3,16 +3,18 @@
 #include "title.h"
 #include <engine/engine_core.h>
 #include <engine/caric.h>
+#include <game/data/data.h>
 
 extern PlaydateAPI* pd;
+extern SaveData saveData;
 
 #define TITLE_CLOUD_COUNT 16
 #define TITLE_RAIN_COUNT 40
 #define TITLE_MIST_COUNT 6
 
 #define SAVE_SLOTS 3
-#define TITLE_PANEL_W 210
-#define TITLE_PANEL_H 130
+#define TITLE_PANEL_W 220
+#define TITLE_PANEL_H 178
 
 typedef enum {
     TITLE_PHASE_PROMPT,
@@ -32,6 +34,8 @@ typedef enum {
     TITLE_OPT_MASTER_VOL,
     TITLE_OPT_MUSIC_VOL,
     TITLE_OPT_SFX_VOL,
+    TITLE_OPT_TEXT_SPEED,
+    TITLE_OPT_SCREEN_FX,
     TITLE_OPT_BACK,
     TITLE_OPT_COUNT
 } TitleOptionItem;
@@ -256,7 +260,9 @@ void TitleScreen_Init(void) {
     iconMinusBit = Asset_LoadBitmap("assets/texture/image/icon_minus");
 
     if (titleLogo != NULL) {
-        pd->graphics->getBitmapData(titleLogo, &titleLogoWidth, &titleLogoHeight, NULL, NULL, NULL);
+        int tw, th;
+        pd->graphics->getBitmapData(titleLogo, &tw, &th, NULL, NULL, NULL);
+        titleLogoWidth = tw; titleLogoHeight = th;
         Caric_Init(&logoCaric, "TitleLogo", titleLogo, (Vec2){SCR_W * 0.5f, 100.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_UI);
         Caric_SetOrigin(&logoCaric, (Vec2){0.5f, 0.5f});
     } else {
@@ -264,23 +270,31 @@ void TitleScreen_Init(void) {
     }
 
     if (titleMoon != NULL) {
-        pd->graphics->getBitmapData(titleMoon, &titleMoonWidth, &titleMoonHeight, NULL, NULL, NULL);
+        int mw, mh;
+        pd->graphics->getBitmapData(titleMoon, &mw, &mh, NULL, NULL, NULL);
+        titleMoonWidth = mw; titleMoonHeight = mh;
         Caric_Init(&moonCaric, "TitleMoon", titleMoon, (Vec2){SCR_W - 60.0f, 60.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_BACKGROUND);
         Caric_SetOrigin(&moonCaric, (Vec2){0.5f, 0.5f});
     }
 
     if (iconCursorBit != NULL) {
-        pd->graphics->getBitmapData(iconCursorBit, &iconCursorWidth, &iconCursorHeight, NULL, NULL, NULL);
+        int cw, ch;
+        pd->graphics->getBitmapData(iconCursorBit, &cw, &ch, NULL, NULL, NULL);
+        iconCursorWidth = cw; iconCursorHeight = ch;
         Caric_Init(&cursorCaric, "IconCursor", iconCursorBit, (Vec2){0.0f, 0.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_UI);
         Caric_SetOrigin(&cursorCaric, (Vec2){0.5f, 0.5f});
     }
     if (iconPlusBit != NULL) {
-        pd->graphics->getBitmapData(iconPlusBit, &iconPlusWidth, &iconPlusHeight, NULL, NULL, NULL);
+        int iconPlusW, iconPlusH;
+        pd->graphics->getBitmapData(iconPlusBit, &iconPlusW, &iconPlusH, NULL, NULL, NULL);
+        iconPlusWidth = iconPlusW; iconPlusHeight = iconPlusH;
         Caric_Init(&plusCaric, "IconPlus", iconPlusBit, (Vec2){0.0f, 0.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_UI);
         Caric_SetOrigin(&plusCaric, (Vec2){0.5f, 0.5f});
     }
     if (iconMinusBit != NULL) {
-        pd->graphics->getBitmapData(iconMinusBit, &iconMinusWidth, &iconMinusHeight, NULL, NULL, NULL);
+        int iconMinusW, iconMinusH;
+        pd->graphics->getBitmapData(iconMinusBit, &iconMinusW, &iconMinusH, NULL, NULL, NULL);
+        iconMinusWidth = iconMinusW; iconMinusHeight = iconMinusH;
         Caric_Init(&minusCaric, "IconMinus", iconMinusBit, (Vec2){0.0f, 0.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_UI);
         Caric_SetOrigin(&minusCaric, (Vec2){0.5f, 0.5f});
     }
@@ -354,7 +368,7 @@ void TitleScreen_Update(f32 deltaTime) {
                 minusBumpScale = 1.0f;
             } else if (titleMenuSelection == TITLE_MENU_CREDITS) {
                 PlaySFX(&audioManager, "assets/audio/sfx/thunder", 80, false);
-                SwitchScreen(&screenManager, SS_TEST_WORLD);
+                SwitchScreen(&screenManager, SS_TEST_4);
             }
         }
         if (Input_IsPressed(&inputManager, INPUT_B)) {
@@ -389,6 +403,10 @@ void TitleScreen_Update(f32 deltaTime) {
             } else if (titleOptionsSelection == TITLE_OPT_SFX_VOL) {
                 vol = GetSFXVol(&audioManager);
                 SetSFXVol(&audioManager, vol >= 10 ? vol - 10 : 0);
+            } else if (titleOptionsSelection == TITLE_OPT_TEXT_SPEED) {
+                if (saveData.textSpeed > 0) saveData.textSpeed--;
+            } else if (titleOptionsSelection == TITLE_OPT_SCREEN_FX) {
+                saveData.screenFxEnabled = !saveData.screenFxEnabled;
             }
             PlaySFX(&audioManager, "assets/audio/sfx/text_letter_blipwav", 70, false);
         }
@@ -404,6 +422,10 @@ void TitleScreen_Update(f32 deltaTime) {
             } else if (titleOptionsSelection == TITLE_OPT_SFX_VOL) {
                 vol = GetSFXVol(&audioManager);
                 SetSFXVol(&audioManager, vol <= 90 ? vol + 10 : 100);
+            } else if (titleOptionsSelection == TITLE_OPT_TEXT_SPEED) {
+                if (saveData.textSpeed < 2) saveData.textSpeed++;
+            } else if (titleOptionsSelection == TITLE_OPT_SCREEN_FX) {
+                saveData.screenFxEnabled = !saveData.screenFxEnabled;
             }
             PlaySFX(&audioManager, "assets/audio/sfx/text_letter_blipwav", 70, false);
         }
@@ -495,8 +517,14 @@ void TitleScreen_Draw(void) {
         if (titlePhase == TITLE_PHASE_PROMPT) {
             bool blink = ((i32)(titleTimer * 2.2f) % 2) == 0;
             if (blink) {
-                cstr beginPrompt = "Press A to Begin";
-                DrawText(beginPrompt, (SCR_W - GetTextWidth(beginPrompt, 2)) / 2, 180, 2, kColorWhite);
+                cstr beforePrompt = "Press ";
+                cstr afterPrompt = " to Begin";
+                i32 totalW = 16 + (i32)GetTextWidth(afterPrompt, 4);
+                i32 px = (SCR_W - totalW) / 2;
+                i32 py = 180;
+                DialogueBox_DrawBtn(true, px + GetTextWidth(beforePrompt, 4)/2, py - 2);
+                DrawText(beforePrompt, px - (GetTextWidth(beforePrompt, 4)/2), py, 4, kColorWhite);
+                DrawText(afterPrompt, px + (GetTextWidth(beforePrompt, 4)/2) + 16 + 2, py, 4, kColorWhite);
             }
         }
         else if (titlePhase == TITLE_PHASE_MENU || titlePhase == TITLE_PHASE_OPTIONS) {
@@ -513,11 +541,11 @@ void TitleScreen_Draw(void) {
                     Caric_SetPosition(&cursorCaric, (Vec2){(f32)menuX + iconCursorWidth * 0.5f, (f32)rowY + (iconCursorHeight * 0.5f)});
                     Caric_SetScale(&cursorCaric, (Vec2){cursorBumpScale, cursorBumpScale});
                     Caric_Draw(&cursorCaric);
-                    DrawText(menuItems[i], menuX + iconCursorWidth + 6, rowY, 2, kColorWhite);
+                    DrawText(menuItems[i], menuX + iconCursorWidth + 6, rowY, 4, kColorWhite);
                 } else {
                     char line[32];
                     snprintf(line, sizeof(line), "%s%s", isSel ? "> " : "  ", menuItems[i]);
-                    DrawText(line, menuX, rowY, 2, kColorWhite);
+                    DrawText(line, menuX, rowY, 4, kColorWhite);
                 }
             }
 
@@ -528,17 +556,17 @@ void TitleScreen_Draw(void) {
                 i32 targetX = SCR_W - winW - 15;
                 i32 hiddenX = SCR_W + 20;
                 i32 winX = hiddenX + (i32)((targetX - hiddenX) * optionsSlide);
-                i32 winY = 80;
+                i32 winY = (SCR_H - winH) / 2;
 
                 // Draw sliding window frame
                 pd->graphics->fillRect(winX, winY, winW, winH, kColorWhite);
                 pd->graphics->fillRect(winX + 2, winY + 2, winW - 4, winH - 4, kColorBlack);
 
-                DrawText("OPTIONS", winX + 12, winY + 8, 2, kColorWhite);
+                DrawText("OPTIONS", winX + 12, winY + 8, 0, kColorWhite);
 
-                cstr optLabels[TITLE_OPT_COUNT] = { "Master Vol", "Music Vol", "SFX Vol", "Back" };
+                cstr optLabels[TITLE_OPT_COUNT] = { "Master Vol", "Music Vol", "SFX Vol", "Text Speed", "Screen FX", "Back" };
                 for (i32 i = 0; i < TITLE_OPT_COUNT; i++) {
-                    i32 rowY = winY + 32 + (i * 24);
+                    i32 rowY = winY + 44 + (i * 24);
                     bool isOptSel = (i == titleOptionsSelection && titlePhase == TITLE_PHASE_OPTIONS);
 
                     i32 cursorX = winX + 18;
@@ -549,10 +577,10 @@ void TitleScreen_Draw(void) {
                         Caric_SetScale(&cursorCaric, (Vec2){cursorBumpScale, cursorBumpScale});
                         Caric_Draw(&cursorCaric);
                     } else if (isOptSel) {
-                        DrawText(">", winX + 12, rowY, 2, kColorWhite);
+                        DrawText(">", winX + 12, rowY, 4, kColorWhite);
                     }
 
-                    DrawText(optLabels[i], labelX, rowY, 2, kColorWhite);
+                    DrawText(optLabels[i], labelX, rowY, 4, kColorWhite);
 
                     // Volume adjusters with fixed position plus/minus caricatures
                     if (i == TITLE_OPT_MASTER_VOL || i == TITLE_OPT_MUSIC_VOL || i == TITLE_OPT_SFX_VOL) {
@@ -573,14 +601,36 @@ void TitleScreen_Draw(void) {
 
                         char valBuf[16];
                         snprintf(valBuf, sizeof(valBuf), "%d%%", volVal);
-                        i32 textW = GetTextWidth(valBuf, 2);
-                        DrawText(valBuf, textCenterX - (textW / 2), rowY, 2, kColorWhite);
+                        i32 textW = GetTextWidth(valBuf, 4);
+                        DrawText(valBuf, textCenterX - (textW / 2), rowY, 4, kColorWhite);
 
                         if (iconPlusBit != NULL) {
                             Caric_SetPosition(&plusCaric, (Vec2){(f32)plusX, (f32)rowY + (iconPlusHeight * 0.5f)});
                             Caric_SetScale(&plusCaric, (Vec2){(isOptSel ? plusBumpScale : 1.0f), (isOptSel ? plusBumpScale : 1.0f)});
                             Caric_Draw(&plusCaric);
                         }
+                    } else if (i == TITLE_OPT_TEXT_SPEED) {
+                        cstr speedLabels[3] = { "Slow", "Normal", "Fast" };
+                        i32 minusX      = winX + winW - 68;
+                        i32 textCenterX = winX + winW - 42;
+                        i32 plusX       = winX + winW - 16;
+                        if (iconMinusBit) {
+                            Caric_SetPosition(&minusCaric, (Vec2){(f32)minusX, (f32)rowY + (iconMinusHeight * 0.5f)});
+                            Caric_SetScale(&minusCaric, (Vec2){(isOptSel ? minusBumpScale : 1.0f), (isOptSel ? minusBumpScale : 1.0f)});
+                            Caric_Draw(&minusCaric);
+                        }
+                        i32 tw = GetTextWidth(speedLabels[saveData.textSpeed], 4);
+                        DrawText(speedLabels[saveData.textSpeed], textCenterX - (tw / 2), rowY, 4, kColorWhite);
+                        if (iconPlusBit) {
+                            Caric_SetPosition(&plusCaric, (Vec2){(f32)plusX, (f32)rowY + (iconPlusHeight * 0.5f)});
+                            Caric_SetScale(&plusCaric, (Vec2){(isOptSel ? plusBumpScale : 1.0f), (isOptSel ? plusBumpScale : 1.0f)});
+                            Caric_Draw(&plusCaric);
+                        }
+                    } else if (i == TITLE_OPT_SCREEN_FX) {
+                        cstr fxLabel    = saveData.screenFxEnabled ? "On" : "Off";
+                        i32 textCenterX = winX + winW - 42;
+                        i32 tw = GetTextWidth(fxLabel, 4);
+                        DrawText(fxLabel, textCenterX - (tw / 2), rowY, 4, kColorWhite);
                     }
                 }
             }
@@ -598,7 +648,7 @@ void TitleScreen_Draw(void) {
             pd->graphics->fillRect(winX, winY, winW, winH, kColorWhite);
             pd->graphics->fillRect(winX + 2, winY + 2, winW - 4, winH - 4, kColorBlack);
 
-            DrawText("SELECT DATA SLOT", winX + 16, winY + 8, 2, kColorWhite);
+            DrawText("SELECT DATA SLOT", winX + 16, winY + 8, 4, kColorWhite);
 
             for (i32 i = 0; i < SAVE_SLOTS; i++) {
                 i32 slotY = winY + 32 + (i * 34);
@@ -619,7 +669,7 @@ void TitleScreen_Draw(void) {
 
                 char slotLabel[32];
                 snprintf(slotLabel, sizeof(slotLabel), "%sSLOT %d: %s", (isSelected && iconCursorBit == NULL) ? "> " : "", i + 1, hasSave ? "SAVED GAME" : "EMPTY");
-                DrawText(slotLabel, textX, slotY + 5, 2, kColorWhite);
+                DrawText(slotLabel, textX, slotY + 5, 4, kColorWhite);
             }
         }
     }

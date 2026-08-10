@@ -1,6 +1,7 @@
 // written by diskodev
 // engine/screen.c
 #include "screen.h"
+#include "audio.h"
 
 ScreenManager screenManager = {0};
 
@@ -51,6 +52,7 @@ void ScreenManager_Draw(ScreenManager* manager) {
 	}
 
 	Visual_DrawFade(&visualManager);
+	Visual_DrawStatic(&visualManager);
 }
 
 void ScreenManager_Unload(ScreenManager* manager) {
@@ -95,6 +97,8 @@ void SwitchScreen(ScreenManager* manager, ScreenState type) {
 	}
 
 	if (manager->currentScreen == type) return;
+
+	FadeOutMusic(&audioManager, 0.6f);
 
 	if (IsValidScreenType(manager->currentScreen)) {
 		IScreen* current = &manager->screens[manager->currentScreen];

@@ -168,3 +168,85 @@ void Visual_ClearShakeOffset(void) {
 	if (pd == NULL) return;
 	pd->graphics->setDrawOffset(0, 0);
 }
+
+void Visual_TriggerStatic(VisualManager* manager, f32 duration) {
+	if (!manager) return;
+	manager->staticDuration = duration;
+	manager->staticTimer    = duration;
+}
+
+void Visual_DrawStatic(VisualManager* manager) {
+	if (!manager || !pd || manager->staticTimer <= 0.0f) return;
+
+	// Density fades out as timer winds down
+	f32 t        = manager->staticTimer / manager->staticDuration;
+	i32 noisePx  = (i32)(t * 4000.0f);
+	u32 seed     = (u32)(manager->staticTimer * 10000.0f);
+
+	pd->graphics->setDrawMode(kDrawModeXOR);
+	for (i32 i = 0; i < noisePx; i++) {
+		seed = seed * 1664525u + 1013904223u;
+		i32 nx = (i32)((seed >> 16) & 0x1FF) % SCR_W;
+		seed = seed * 1664525u + 1013904223u;
+		i32 ny = (i32)((seed >> 16) & 0xFF) % SCR_H;
+		pd->graphics->fillRect(nx, ny, 2, 2, kColorBlack);
+	}
+	pd->graphics->setDrawMode(kDrawModeCopy);
+
+	manager->staticTimer -= 1.0f / 30.0f;
+	if (manager->staticTimer < 0.0f) manager->staticTimer = 0.0f;
+}
+
+// ---- Screen effects --------------------------------------------------------
+
+static LCDBitmap* s_effectBuf = NULL;
+
+void Visual_BeginEffect(void) {
+	if (!pd) return;
+	if (!s_effectBuf)
+		s_effectBuf = pd->graphics->newBitmap(SCR_W, SCR_H, kColorWhite);
+	pd->graphics->pushContext(s_effectBuf);
+}
+
+void Visual_EndEffect(void) {
+	if (!pd) return;
+	pd->graphics->popContext();
+}
+
+static void DrawEffect_Wave(f32 level, f32 time) {
+	f32 amp = level * 10.0f;
+	for (i32 y = 0; y < SCR_H; y++) {
+		i32 shift = (i32)(sinf(y * 0.08f + time * 4.0f) * amp
+		             + sinf(y * 0.03f + time * 1.7f) * amp * 0.4f);
+		pd->graphics->setClipRect(0, y, SCR_W, 1);
+		pd->graphics->drawBitmap(s_effectBuf, shift, 0, kBitmapUnflipped);
+	}
+	pd->graphics->clearClipRect();
+}
+
+static void DrawEffect_Grain(f32 level, f32 time) {
+	pd->graphics->drawBitmap(s_effectBuf, 0, 0, kBitmapUnflipped);
+	// Scatter XOR noise — flips pixels so it grains both light and dark areas
+	u32 seed = (u32)(time * 60.0f);
+	i32 noisePx = (i32)(level * 1200.0f);
+	pd->graphics->setDrawMode(kDrawModeXOR);
+	for (i32 i = 0; i < noisePx; i++) {
+		seed = seed * 1664525u + 1013904223u;
+		i32 nx = (i32)((seed >> 16) & 0x1FF) % SCR_W;
+		seed = seed * 1664525u + 1013904223u;
+		i32 ny = (i32)((seed >> 16) & 0xFF) % SCR_H;
+		pd->graphics->fillRect(nx, ny, 2, 2, kColorBlack);
+	}
+	pd->graphics->setDrawMode(kDrawModeCopy);
+}
+
+void Visual_DrawEffect(VisualEffectType type, f32 level, f32 time) {
+	if (!pd || !s_effectBuf || level <= 0.0f) {
+		if (s_effectBuf) pd->graphics->drawBitmap(s_effectBuf, 0, 0, kBitmapUnflipped);
+		return;
+	}
+	switch (type) {
+		case VISUAL_EFFECT_WAVE:  DrawEffect_Wave(level, time);  break;
+		case VISUAL_EFFECT_GRAIN: DrawEffect_Grain(level, time); break;
+	}
+}

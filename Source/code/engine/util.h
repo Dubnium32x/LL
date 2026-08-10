@@ -243,12 +243,13 @@ static inline void printd(u8 priority, const char *message, ...)
 #define CARIC_FLAG_ENABLED              0b00000001
 #define CARIC_FLAG_PERSISTENT           0b10000000
 
-extern LCDFont* fontFamily[4];
+extern LCDFont* fontFamily[5];
 
 extern LCDFont octoFont;
 extern LCDFont resmontFont;
 extern LCDFont sonicFont;
 extern LCDFont storiesFont;
+extern LCDFont billJillyFont;
 
 #define _STRINGIFY(x) #x
 #define STRINGIFY(x) _STRINGIFY(x)

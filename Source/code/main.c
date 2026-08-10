@@ -9,18 +9,24 @@
 
 #include "pd_api.h"
 #include <engine/engine_core.h>
+#include <engine/menu_image.h>
+#include <game/data/data.h>
 #include <game/screens/test_screen.h>
 #include <game/screens/cutscene.h>
 #include <game/screens/test_screen2.h>
 #include <game/screens/world_test.h>
+#include <game/screens/dialogue_test.h>
+#include <game/screens/phys_test.h>
+#include <game/screens/phys_test2.h>
 #include <game/screens/init.h>
 #include <game/screens/splash.h>
 #include <game/screens/intro.h>
 #include <game/screens/title.h>
 #include <game/screens/title.h>
+#include <game/screens/light_test.h>
 
 PlaydateAPI* pd = NULL;
-LCDFont* fontFamily[4] = {0};
+LCDFont* fontFamily[5] = {0};
 
 static void InitFonts(void) {
     LoadFonts(pd);
@@ -46,7 +52,48 @@ static int Update(void* userdata) {
     return 1;
 }
 
+static void DrawMenuImage(LCDBitmap* canvas) {
+    (void)canvas;
+    pd->graphics->fillRect(0, 0, 200, 240, kColorBlack);
+
+    pd->graphics->setDrawMode(kDrawModeFillWhite);
+    pd->graphics->setFont(fontFamily[4]);
+    pd->graphics->drawText("PAUSED", 6, kASCIIEncoding, 10, 10);
+    // pd->graphics->drawLine(10, 28, 190, 28, 1, kColorWhite);
+
+    pd->graphics->setFont(fontFamily[1]);
+
+    PlayerData* p = &playerData;
+    char* buf = NULL; i32 bufSize = 0;
+    i32 y = 38;
+    const i32 step = 16;
+
+    #define DRAW(fmt, ...) \
+        pd->system->formatString(&buf, fmt, ##__VA_ARGS__); \
+        pd->graphics->drawText(buf, __builtin_strlen(buf), kASCIIEncoding, 10, y); \
+        pd->system->realloc(buf, 0); buf = NULL; y += step;
+
+    DRAW("Area:  %s", AreaType_Name(p->currentArea))
+    DRAW("Room:  %d",  p->currentRoom)
+    DRAW("Notes: %d / %d", PlayerData_NoteCount(p), MAX_NOTES)
+
+    #undef DRAW
+
+    pd->graphics->drawLine(10, y + 2, 190, y + 2, 1, kColorWhite); y += 12;
+
+    pd->graphics->drawText("Items:", 6, kASCIIEncoding, 10, y); y += step;
+    for (int i = 0; i < 3; i++) {
+        ItemType item = p->currentItems[i] ? *p->currentItems[i] : ITEM_NONE;
+        const char* name = ItemType_Name(item);
+        pd->graphics->drawText(name, __builtin_strlen(name), kASCIIEncoding, 20, y);
+        y += step;
+    }
+}
+
 int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
+    if (event == kEventPause) {
+        MenuImage_Set(DrawMenuImage, 0);
+    }
     if (event == kEventInit) {
         pd = playdate;
         
@@ -79,12 +126,31 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
         //                TestScreen2_Draw,
         //                TestScreen2_Unload);
 
-        // RegisterScreen(&screenManager,
-        //                SS_TEST_WORLD,
-        //                WorldTestScreen_Init,
-        //                WorldTestScreen_Update,
-        //                WorldTestScreen_Draw,
-        //                WorldTestScreen_Unload);
+        RegisterScreen(&screenManager,
+                       SS_TEST_WORLD,
+                       DialogueTestScreen_Init,
+                       DialogueTestScreen_Update,
+                       DialogueTestScreen_Draw,
+                       DialogueTestScreen_Unload);
+        RegisterScreen(&screenManager,
+                       SS_TEST_4,
+                       PhysTestScreen_Init,
+                       PhysTestScreen_Update,
+                       PhysTestScreen_Draw,
+                       PhysTestScreen_Unload);
+        RegisterScreen(&screenManager,
+                       SS_TEST_5,
+                       PhysTest2Screen_Init,
+                       PhysTest2Screen_Update,
+                       PhysTest2Screen_Draw,
+                       PhysTest2Screen_Unload);
+
+        RegisterScreen(&screenManager,
+                       SS_TEST_6,
+                       LightTestScreen_Init,
+                       LightTestScreen_Update,
+                       LightTestScreen_Draw,
+                       LightTestScreen_Unload); 
         RegisterScreen(&screenManager,
                        SS_INIT,
                        InitScreen_Init,
@@ -112,7 +178,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
                        TitleScreen_Draw,
                        TitleScreen_Unload);
 
-        SwitchScreen(&screenManager, SS_INIT);
+        SwitchScreen(&screenManager, SS_TEST_4);
 
         pd->system->setUpdateCallback(Update, NULL);
     }

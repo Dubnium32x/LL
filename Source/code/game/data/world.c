@@ -63,15 +63,12 @@ void World_Draw(PlaydateAPI* pd, World* world, i32 cameraX, i32 cameraY) {
     if (pd == NULL || world == NULL || !world->isLoaded || world->tileTable == NULL) return;
 
     for (int layer = 0; layer < LAYER_COUNT; layer++) {
+        if (layer == LAYER_COLLISION) continue;
         for (u8 y = 0; y < WORLD_HEIGHT_TILES; y++) {
             for (u8 x = 0; x < WORLD_WIDTH_TILES; x++) {
                 i32 tileId = world->tiles[layer][y][x];
-
                 if (tileId < 0) continue;
-
-                // Playdate bitmap tables are 1-indexed in C API:
-                // Tile ID 0 in CSV maps to the 1st frame in the table (index 1)
-                LCDBitmap* tileImg = pd->graphics->getTableBitmap(world->tileTable, tileId + 1);
+                LCDBitmap* tileImg = pd->graphics->getTableBitmap(world->tileTable, tileId);
                 if (tileImg != NULL) {
                     i32 drawX = (x * TILE_SIZE) - cameraX;
                     i32 drawY = (y * TILE_SIZE) - cameraY;
@@ -80,6 +77,32 @@ void World_Draw(PlaydateAPI* pd, World* world, i32 cameraX, i32 cameraY) {
             }
         }
     }
+}
+
+void World_DrawLayer(PlaydateAPI* pd, World* world, WorldLayer layer, i32 cameraX, i32 cameraY) {
+    if (pd == NULL || world == NULL || !world->isLoaded || world->tileTable == NULL) return;
+    if (layer >= LAYER_COUNT || layer == LAYER_COLLISION) return;
+    for (u8 y = 0; y < WORLD_HEIGHT_TILES; y++) {
+        for (u8 x = 0; x < WORLD_WIDTH_TILES; x++) {
+            i32 tileId = world->tiles[layer][y][x];
+            if (tileId < 0) continue;
+            LCDBitmap* tileImg = pd->graphics->getTableBitmap(world->tileTable, tileId);
+            if (tileImg != NULL) {
+                pd->graphics->drawBitmap(tileImg, x * TILE_SIZE - cameraX, y * TILE_SIZE - cameraY, kBitmapUnflipped);
+            }
+        }
+    }
+}
+
+CollisionType World_GetCollisionType(World* world, i32 tileX, i32 tileY) {
+    if (world == NULL || tileX < 0 || tileY < 0
+        || tileX >= WORLD_WIDTH_TILES || tileY >= WORLD_HEIGHT_TILES)
+        return COL_SOLID;
+    i32 val = world->tiles[LAYER_COLLISION][tileY][tileX];
+    if (val < 0 || val >= COL_TYPE_COUNT) return COL_EMPTY;
+    CollisionType ct = (CollisionType)val;
+    if (ct == COL_NULL) return COL_EMPTY;
+    return ct;
 }
 
 i32 World_GetTile(World* world, WorldLayer layer, u8 x, u8 y) {

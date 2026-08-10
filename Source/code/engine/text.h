@@ -6,7 +6,7 @@
 
 static inline void DrawText(cstr text, i32 x, i32 y, u8 fontFamIndex, LCDColor color) {
     if (!pd || !pd->graphics || !text) return;
-    if (fontFamIndex < 0 || fontFamIndex >= 4) return;
+    if (fontFamIndex < 0 || fontFamIndex >= 5) return;
 
     LCDFont* font = fontFamily[fontFamIndex];
     if (!font) return;
@@ -45,11 +45,15 @@ static inline void LoadFonts(PlaydateAPI* pd) {
     err = NULL;
     fontFamily[3] = pd->graphics->loadFont("assets/font/stories-thinking.regular", &err);
     if (fontFamily[3] == NULL && err) LOG("LoadFonts: %s", err);
+
+    err = NULL;
+    fontFamily[4] = pd->graphics->loadFont("assets/font/BillJilly", &err);
+    if (fontFamily[4] == NULL && err) LOG("LoadFonts: %s", err);
 }
 
 static inline u32 GetTextWidth(cstr text, u8 fontFamIndex) {
     if (!pd || !pd->graphics || !text) return 0;
-    if (fontFamIndex < 0 || fontFamIndex >= 4) return 0;
+    if (fontFamIndex < 0 || fontFamIndex >= 5) return 0;
 
     LCDFont* font = fontFamily[fontFamIndex];
     if (!font) return 0;
