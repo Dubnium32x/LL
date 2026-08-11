@@ -52,6 +52,26 @@ static int Update(void* userdata) {
     return 1;
 }
 
+static void DrawMenuImageGlitch(LCDBitmap* canvas) {
+    (void)canvas;
+    LCDBitmap* lmao = Asset_LoadBitmap("assets/texture/image/LMAO");
+    if (lmao) pd->graphics->drawBitmap(lmao, 0, 0, kBitmapUnflipped);
+}
+
+static void DrawMenuImageAreYouOkay(LCDBitmap* canvas) {
+    (void)canvas;
+    pd->graphics->fillRect(0, 0, 200, 240, kColorBlack);
+
+    pd->graphics->setDrawMode(kDrawModeFillWhite);
+    LCDFont* font = fontFamily[4];
+    pd->graphics->setFont(font);
+    const char* msg = "Are you okay?";
+    int w = pd->graphics->getTextWidth(font, msg, __builtin_strlen(msg), kASCIIEncoding, 0);
+    int x = (200 - w) / 2;
+    if (x < 4) x = 4;
+    pd->graphics->drawText(msg, __builtin_strlen(msg), kASCIIEncoding, x, 110);
+}
+
 static void DrawMenuImage(LCDBitmap* canvas) {
     (void)canvas;
     pd->graphics->fillRect(0, 0, 200, 240, kColorBlack);
@@ -92,17 +112,34 @@ static void DrawMenuImage(LCDBitmap* canvas) {
 
 int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
     if (event == kEventPause) {
-        MenuImage_Set(DrawMenuImage, 0);
+        bool onPhysTest = GetCurrentScreenType(&screenManager) == SS_TEST_4;
+        MenuImageDrawFn drawFn = DrawMenuImage;
+        if (onPhysTest && PhysTestScreen_IsSanityGlitchActive()) {
+            drawFn = DrawMenuImageGlitch;
+        } else if (onPhysTest && PhysTestScreen_IsSanityLow() && (rand() % 100) < 10) {
+            // "Are you okay?" — 10% chance per pause, only while sanity is low.
+            drawFn = DrawMenuImageAreYouOkay;
+        }
+        MenuImage_Set(drawFn, 0);
     }
     if (event == kEventInit) {
         pd = playdate;
-        
+
+        // Without this, rand() starts from the same default seed every launch, so every
+        // "random" pick (sanity glitch selection, chance rolls, etc.) replays identically
+        // from one playthrough to the next.
+        unsigned int seedMs = 0;
+        unsigned int seedSec = pd->system->getSecondsSinceEpoch(&seedMs);
+        srand(seedSec ^ seedMs);
+
         Asset_InitManager();
         InitFonts();
         InitAudio();
         InitInput();
+        SaveData_Init(&saveData);
         
         Visual_InitManager(&visualManager);
+        Drip_Init();
         ScreenManager_Init(&screenManager);
 
         // RegisterScreen(&screenManager,

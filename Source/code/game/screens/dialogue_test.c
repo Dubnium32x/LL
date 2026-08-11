@@ -99,7 +99,7 @@ void DialogueTestScreen_Draw(void) {
         char msg[64];
         snprintf(msg, sizeof(msg), "Choice: %s",
                  s_lastChoice == 0 ? "Keep going" : "Turn back");
-        DrawText(msg, 10, SCR_H - 20, 4, kColorBlack);
+        DrawText(msg, 240, 12, 4, kColorBlack);
     }
 
     // legend shown when nothing is blocking

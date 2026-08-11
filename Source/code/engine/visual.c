@@ -1,6 +1,9 @@
 // written by diskodev
 // engine/visual.c
 #include "visual.h"
+#include <game/data/data.h>
+
+extern SaveData saveData;
 
 VisualManager visualManager = {0};
 
@@ -150,8 +153,32 @@ void Visual_DrawFade(const VisualManager* manager) {
 	pd->graphics->fillRect(0, 0, SCR_W, SCR_H, (LCDColor)pattern);
 }
 
+void Visual_SetAutoFadeDrawSuppressed(VisualManager* manager, bool suppressed) {
+	if (manager == NULL) return;
+	manager->autoFadeDrawSuppressed = suppressed;
+}
+
+// One-shot dark dither overlay — independent of the fade timer/state, so a screen can drop it
+// over the whole frame (e.g. a "lights off" effect) for as many draws as it needs, regardless
+// of what was drawn underneath (debug geometry included).
+void Visual_DrawDarken(f32 amount) {
+	if (pd == NULL) return;
+	amount = Clamp(amount, 0.0f, 1.0f);
+
+	if (amount <= 0.0f) return;
+	if (amount >= 1.0f) {
+		pd->graphics->fillRect(0, 0, SCR_W, SCR_H, kColorBlack);
+		return;
+	}
+
+	LCDPattern pattern;
+	Visual_BuildFadePattern(amount, VISUAL_FADE_BLACK, pattern);
+	pd->graphics->fillRect(0, 0, SCR_W, SCR_H, (LCDColor)pattern);
+}
+
 void Visual_StartShake(VisualManager* manager, f32 intensity, f32 duration) {
 	if (manager == NULL) return;
+	if (!saveData.screenFxEnabled) return;
 	manager->shakeIntensity = intensity;
 	manager->shakeDuration = MaxF(0.001f, duration);
 	manager->shakeTimer = manager->shakeDuration;
@@ -171,6 +198,7 @@ void Visual_ClearShakeOffset(void) {
 
 void Visual_TriggerStatic(VisualManager* manager, f32 duration) {
 	if (!manager) return;
+	if (!saveData.screenFxEnabled) return;
 	manager->staticDuration = duration;
 	manager->staticTimer    = duration;
 }
@@ -195,6 +223,37 @@ void Visual_DrawStatic(VisualManager* manager) {
 
 	manager->staticTimer -= 1.0f / 30.0f;
 	if (manager->staticTimer < 0.0f) manager->staticTimer = 0.0f;
+}
+
+void Visual_TriggerTVSnow(VisualManager* manager, f32 duration) {
+	if (!manager) return;
+	if (!saveData.screenFxEnabled) return;
+	manager->snowDuration = duration;
+	manager->snowTimer    = duration;
+}
+
+void Visual_DrawTVSnow(VisualManager* manager) {
+	if (!manager || !pd || manager->snowTimer <= 0.0f) return;
+
+	// Solid white background, like a TV with no signal
+	pd->graphics->fillRect(0, 0, SCR_W, SCR_H, kColorWhite);
+
+	// Density fades out as timer winds down
+	f32 t        = manager->snowTimer / manager->snowDuration;
+	i32 noisePx  = (i32)(t * 4000.0f);
+	u32 seed     = (u32)(manager->snowTimer * 10000.0f);
+
+	pd->graphics->setDrawMode(kDrawModeCopy);
+	for (i32 i = 0; i < noisePx; i++) {
+		seed = seed * 1664525u + 1013904223u;
+		i32 nx = (i32)((seed >> 16) & 0x1FF) % SCR_W;
+		seed = seed * 1664525u + 1013904223u;
+		i32 ny = (i32)((seed >> 16) & 0xFF) % SCR_H;
+		pd->graphics->fillRect(nx, ny, 2, 2, kColorBlack);
+	}
+
+	manager->snowTimer -= 1.0f / 30.0f;
+	if (manager->snowTimer < 0.0f) manager->snowTimer = 0.0f;
 }
 
 // ---- Screen effects --------------------------------------------------------

@@ -21,6 +21,12 @@ typedef struct {
 	f32 elapsed;
 	bool active;
 
+	// When true, ScreenManager_Draw skips its automatic post-screen Visual_DrawFade call — lets
+	// a screen draw the fade itself at a specific point in its own draw order (e.g. behind its
+	// HUD instead of over the whole frame). The screen is responsible for calling Visual_DrawFade
+	// itself wherever it wants it, and for clearing this back to false on Unload.
+	bool autoFadeDrawSuppressed;
+
 	// Screen Shake
 	f32 shakeIntensity;
 	f32 shakeDuration;
@@ -31,6 +37,10 @@ typedef struct {
         // Static transition
         f32 staticTimer;
         f32 staticDuration;
+
+        // TV Snow (black + white speckle noise)
+        f32 snowTimer;
+        f32 snowDuration;
 } VisualManager;
 
 extern VisualManager visualManager;
@@ -49,6 +59,8 @@ void Visual_StopFade(VisualManager* manager);
 bool Visual_IsFadeActive(const VisualManager* manager);
 f32 Visual_GetFadeProgress(const VisualManager* manager);
 void Visual_DrawFade(const VisualManager* manager);
+void Visual_DrawDarken(f32 amount);  // one-shot dark dither overlay, independent of fade state
+void Visual_SetAutoFadeDrawSuppressed(VisualManager* manager, bool suppressed);
 
 // Screen Shake API
 void Visual_StartShake(VisualManager* manager, f32 intensity, f32 duration);
@@ -57,6 +69,10 @@ void Visual_ClearShakeOffset(void);
 
 void Visual_TriggerStatic(VisualManager* manager, f32 duration);
 void Visual_DrawStatic(VisualManager* manager);  // draws & ticks down timer
+
+// TV Snow — black + white speckle noise (real TV-static look), separate from Visual_DrawStatic
+void Visual_TriggerTVSnow(VisualManager* manager, f32 duration);
+void Visual_DrawTVSnow(VisualManager* manager);  // draws & ticks down timer
 
 // Screen effects
 typedef enum {

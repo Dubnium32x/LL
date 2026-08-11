@@ -14,7 +14,7 @@ extern SaveData saveData;
 
 #define SAVE_SLOTS 3
 #define TITLE_PANEL_W 220
-#define TITLE_PANEL_H 178
+#define TITLE_PANEL_H 210
 
 typedef enum {
     TITLE_PHASE_PROMPT,
@@ -36,6 +36,8 @@ typedef enum {
     TITLE_OPT_SFX_VOL,
     TITLE_OPT_TEXT_SPEED,
     TITLE_OPT_SCREEN_FX,
+    TITLE_OPT_FLASHING_LIGHTS,
+    TITLE_OPT_GORE_ENABLED,
     TITLE_OPT_BACK,
     TITLE_OPT_COUNT
 } TitleOptionItem;
@@ -70,6 +72,7 @@ static LCDBitmap* titleMoon = NULL;
 static LCDBitmap* iconCursorBit = NULL;
 static LCDBitmap* iconPlusBit = NULL;
 static LCDBitmap* iconMinusBit = NULL;
+static LCDBitmap* iconDpadBit = NULL;
 
 static Caricature logoCaric;
 static Caricature moonCaric;
@@ -87,6 +90,8 @@ static i32 iconPlusWidth = 0;
 static i32 iconPlusHeight = 0;
 static i32 iconMinusWidth = 0;
 static i32 iconMinusHeight = 0;
+static i32 iconDpadWidth = 0;
+static i32 iconDpadHeight = 0;
 static f32 titleTimer = 0.0f;
 static bool introSfxFinished = false;
 
@@ -258,6 +263,7 @@ void TitleScreen_Init(void) {
     iconCursorBit = Asset_LoadBitmap("assets/texture/image/icon_cursor");
     iconPlusBit = Asset_LoadBitmap("assets/texture/image/icon_plus");
     iconMinusBit = Asset_LoadBitmap("assets/texture/image/icon_minus");
+    iconDpadBit = Asset_LoadBitmap("assets/texture/image/ui/btn_all_dpad");
 
     if (titleLogo != NULL) {
         int tw, th;
@@ -297,6 +303,11 @@ void TitleScreen_Init(void) {
         iconMinusWidth = iconMinusW; iconMinusHeight = iconMinusH;
         Caric_Init(&minusCaric, "IconMinus", iconMinusBit, (Vec2){0.0f, 0.0f}, (Vec2){1.0f, 1.0f}, CARIC_TYPE_UI);
         Caric_SetOrigin(&minusCaric, (Vec2){0.5f, 0.5f});
+    }
+    if (iconDpadBit != NULL) {
+        int dw, dh;
+        pd->graphics->getBitmapData(iconDpadBit, &dw, &dh, NULL, NULL, NULL);
+        iconDpadWidth = dw; iconDpadHeight = dh;
     }
 
     // Play thunder SFX when title screen starts
@@ -407,6 +418,10 @@ void TitleScreen_Update(f32 deltaTime) {
                 if (saveData.textSpeed > 0) saveData.textSpeed--;
             } else if (titleOptionsSelection == TITLE_OPT_SCREEN_FX) {
                 saveData.screenFxEnabled = !saveData.screenFxEnabled;
+            } else if (titleOptionsSelection == TITLE_OPT_FLASHING_LIGHTS) {
+                saveData.flashingLights = !saveData.flashingLights;
+            } else if (titleOptionsSelection == TITLE_OPT_GORE_ENABLED) {
+                saveData.goreEnabled = !saveData.goreEnabled;
             }
             PlaySFX(&audioManager, "assets/audio/sfx/text_letter_blipwav", 70, false);
         }
@@ -426,6 +441,10 @@ void TitleScreen_Update(f32 deltaTime) {
                 if (saveData.textSpeed < 2) saveData.textSpeed++;
             } else if (titleOptionsSelection == TITLE_OPT_SCREEN_FX) {
                 saveData.screenFxEnabled = !saveData.screenFxEnabled;
+            } else if (titleOptionsSelection == TITLE_OPT_FLASHING_LIGHTS) {
+                saveData.flashingLights = !saveData.flashingLights;
+            } else if (titleOptionsSelection == TITLE_OPT_GORE_ENABLED) {
+                saveData.goreEnabled = !saveData.goreEnabled;
             }
             PlaySFX(&audioManager, "assets/audio/sfx/text_letter_blipwav", 70, false);
         }
@@ -549,6 +568,12 @@ void TitleScreen_Draw(void) {
                 }
             }
 
+            if (titlePhase == TITLE_PHASE_MENU) {
+                cstr hint = "} Back  { Accept";
+                i32 hintW = MeasureIconText(hint, 2);
+                DrawIconText(hint, SCR_W - 16 - hintW, SCR_H - 18, 2, kColorWhite, 16);
+            }
+
             // Draw Options Panel sliding in from the right side
             if (optionsSlide > 0.01f) {
                 i32 winW = TITLE_PANEL_W + 10;
@@ -564,20 +589,23 @@ void TitleScreen_Draw(void) {
 
                 DrawText("OPTIONS", winX + 12, winY + 8, 0, kColorWhite);
 
-                cstr optLabels[TITLE_OPT_COUNT] = { "Master Vol", "Music Vol", "SFX Vol", "Text Speed", "Screen FX", "Back" };
+                cstr optLabels[TITLE_OPT_COUNT] = {
+                    "Master Vol", "Music Vol", "SFX Vol", "Text Speed",
+                    "Screen FX", "Flashing Lights", "Gore", "Back"
+                };
                 for (i32 i = 0; i < TITLE_OPT_COUNT; i++) {
-                    i32 rowY = winY + 44 + (i * 24);
+                    i32 rowY = winY + 38 + (i * 21);
                     bool isOptSel = (i == titleOptionsSelection && titlePhase == TITLE_PHASE_OPTIONS);
 
-                    i32 cursorX = winX + 18;
-                    i32 labelX = winX + 32;
+                    i32 cursorX = winX + 12;
+                    i32 labelX = winX + 26;
 
                     if (isOptSel && iconCursorBit != NULL) {
                         Caric_SetPosition(&cursorCaric, (Vec2){(f32)cursorX, (f32)rowY + (iconCursorHeight * 0.5f)});
                         Caric_SetScale(&cursorCaric, (Vec2){cursorBumpScale, cursorBumpScale});
                         Caric_Draw(&cursorCaric);
                     } else if (isOptSel) {
-                        DrawText(">", winX + 12, rowY, 4, kColorWhite);
+                        DrawText(">", winX + 6, rowY, 4, kColorWhite);
                     }
 
                     DrawText(optLabels[i], labelX, rowY, 4, kColorWhite);
@@ -589,8 +617,8 @@ void TitleScreen_Draw(void) {
                                                                   GetSFXVol(&audioManager);
 
                         // Fixed stationary column positions inside options window
-                        i32 minusX = winX + winW - 68;
-                        i32 textCenterX = winX + winW - 42;
+                        i32 minusX = winX + winW - 78;
+                        i32 textCenterX = winX + winW - 48;
                         i32 plusX = winX + winW - 16;
 
                         if (iconMinusBit != NULL) {
@@ -611,8 +639,8 @@ void TitleScreen_Draw(void) {
                         }
                     } else if (i == TITLE_OPT_TEXT_SPEED) {
                         cstr speedLabels[3] = { "Slow", "Normal", "Fast" };
-                        i32 minusX      = winX + winW - 68;
-                        i32 textCenterX = winX + winW - 42;
+                        i32 minusX      = winX + winW - 78;
+                        i32 textCenterX = winX + winW - 48;
                         i32 plusX       = winX + winW - 16;
                         if (iconMinusBit) {
                             Caric_SetPosition(&minusCaric, (Vec2){(f32)minusX, (f32)rowY + (iconMinusHeight * 0.5f)});
@@ -628,10 +656,40 @@ void TitleScreen_Draw(void) {
                         }
                     } else if (i == TITLE_OPT_SCREEN_FX) {
                         cstr fxLabel    = saveData.screenFxEnabled ? "On" : "Off";
-                        i32 textCenterX = winX + winW - 42;
+                        i32 textCenterX = winX + winW - 48;
                         i32 tw = GetTextWidth(fxLabel, 4);
                         DrawText(fxLabel, textCenterX - (tw / 2), rowY, 4, kColorWhite);
+                    } else if (i == TITLE_OPT_FLASHING_LIGHTS) {
+                        cstr flLabel    = saveData.flashingLights ? "On" : "Off";
+                        i32 textCenterX = winX + winW - 48;
+                        i32 tw = GetTextWidth(flLabel, 4);
+                        DrawText(flLabel, textCenterX - (tw / 2), rowY, 4, kColorWhite);
+                    } else if (i == TITLE_OPT_GORE_ENABLED) {
+                        cstr goreLabel  = saveData.goreEnabled ? "On" : "Off";
+                        i32 textCenterX = winX + winW - 48;
+                        i32 tw = GetTextWidth(goreLabel, 4);
+                        DrawText(goreLabel, textCenterX - (tw / 2), rowY, 4, kColorWhite);
                     }
+                }
+
+                {
+                    cstr backPart = "} Back";
+                    i32 backW   = MeasureIconText(backPart, 2);
+                    i32 dpadW   = iconDpadBit ? iconDpadWidth : 0;
+                    i32 changeW = GetTextWidth("Change", 2);
+                    i32 gap     = 6;
+                    i32 totalW  = backW + gap + dpadW + gap + changeW;
+                    i32 hintY   = winY + winH - 18;
+                    i32 cx      = winX + (winW - totalW) / 2;
+
+                    DrawIconText(backPart, cx, hintY, 2, kColorWhite, 16);
+                    cx += backW + gap;
+                    if (iconDpadBit != NULL) {
+                        pd->graphics->setDrawMode(kDrawModeCopy);
+                        pd->graphics->drawBitmap(iconDpadBit, cx, hintY + (16 - iconDpadHeight) / 2 - 2, kBitmapUnflipped);
+                    }
+                    cx += dpadW + gap;
+                    DrawText("Change", cx, hintY, 2, kColorWhite);
                 }
             }
         }
@@ -648,7 +706,7 @@ void TitleScreen_Draw(void) {
             pd->graphics->fillRect(winX, winY, winW, winH, kColorWhite);
             pd->graphics->fillRect(winX + 2, winY + 2, winW - 4, winH - 4, kColorBlack);
 
-            DrawText("SELECT DATA SLOT", winX + 16, winY + 8, 4, kColorWhite);
+            DrawText("SELECT DATA SLOT", winX + 16, winY + 6, 0, kColorWhite);
 
             for (i32 i = 0; i < SAVE_SLOTS; i++) {
                 i32 slotY = winY + 32 + (i * 34);
@@ -671,7 +729,15 @@ void TitleScreen_Draw(void) {
                 snprintf(slotLabel, sizeof(slotLabel), "%sSLOT %d: %s", (isSelected && iconCursorBit == NULL) ? "> " : "", i + 1, hasSave ? "SAVED GAME" : "EMPTY");
                 DrawText(slotLabel, textX, slotY + 5, 4, kColorWhite);
             }
+
+            {
+                cstr hint = "} Back  { Accept";
+                i32 hintW = MeasureIconText(hint, 2);
+                DrawIconText(hint, winX + (winW - hintW) / 2, winY + winH - 16, 2, kColorWhite, 16);
+            }
         }
+
+        DrawText("Pre-Alpha Version " GAME_VERSION, 4, SCR_H - 12, 2, kColorWhite);
     }
 }
 
@@ -698,4 +764,8 @@ void TitleScreen_Unload(void) {
         Asset_FreeBitmap(iconMinusBit);
         iconMinusBit = NULL;
     }
-} 
+    if (iconDpadBit != NULL) {
+        Asset_FreeBitmap(iconDpadBit);
+        iconDpadBit = NULL;
+    }
+}

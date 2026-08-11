@@ -104,6 +104,7 @@ void PlaySFX(AudioManager* manager, cstr path, u8 volume, bool loop);
 void PlayVox(AudioManager* manager, cstr path, u8 volume, bool loop);
 void PlayAmb(AudioManager* manager, cstr path, u8 volume, bool loop);
 
+void StopSFX(AudioManager* manager, cstr path);
 void StopAllSFX(AudioManager* manager);
 void StopAllVox(AudioManager* manager);
 void StopAllAmb(AudioManager* manager);

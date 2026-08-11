@@ -20,7 +20,7 @@ extern PlaydateAPI* pd;
 #define LOG(...) do { if (pd) pd->system->logToConsole(__VA_ARGS__); } while(0)
 
 #define GAME_NAME "Lincoln's Labyrinthine"
-#define GAME_VERSION "0.1.0"
+#define GAME_VERSION "0.2.1"
 
 #define TARGET_FPS 30
 #define TARGET_FRAME_TIME (1.0f / TARGET_FPS)

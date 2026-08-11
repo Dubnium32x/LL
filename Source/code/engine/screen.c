@@ -51,8 +51,11 @@ void ScreenManager_Draw(ScreenManager* manager) {
 		activeScreen->Draw();
 	}
 
-	Visual_DrawFade(&visualManager);
+	if (!visualManager.autoFadeDrawSuppressed) {
+		Visual_DrawFade(&visualManager);
+	}
 	Visual_DrawStatic(&visualManager);
+	Visual_DrawTVSnow(&visualManager);
 }
 
 void ScreenManager_Unload(ScreenManager* manager) {

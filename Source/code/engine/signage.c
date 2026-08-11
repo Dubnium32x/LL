@@ -25,6 +25,8 @@ static char  s_wrapped[SIG_WRAP_LINES][SIG_LINE_LEN];
 static i32   s_wrapCount;
 static i32   s_boxH;
 static i32   s_boxX, s_boxY;
+static bool  s_blank;       // true while showing a blank sign — ignores A/B, auto-closes itself
+static f32   s_blankTimer;
 
 static void WrapBody(const char* text, i32 maxW) {
     s_wrapCount = 0;
@@ -52,6 +54,7 @@ static void WrapBody(const char* text, i32 maxW) {
 }
 
 void Signage_Show(const char* header, const char* text) {
+    s_blank = false;
     strncpy(s_header, header ? header : "", sizeof(s_header) - 1);
 
     LCDFont* bf = fontFamily[SIG_FONT_BODY];
@@ -72,15 +75,33 @@ void Signage_Show(const char* header, const char* text) {
     PlaySFX(&audioManager, "assets/audio/sfx/textbox_appear", 80, false);
 }
 
+void Signage_ShowGlitch(const char* text, f32 holdDuration) {
+    Signage_Show("", text);
+    s_blank      = true;
+    s_blankTimer = holdDuration;
+}
+
 void Signage_Dismiss(void) {
     if (s_active) PlaySFX(&audioManager, "assets/audio/sfx/textbox_proceed", 70, false);
     s_active = false;
+    s_blank  = false;
 }
 bool Signage_IsActive(void) { return s_active; }
 
 void Signage_Update(f32 deltaTime) {
-    (void)deltaTime;
     if (!s_active) return;
+
+    if (s_blank) {
+        // Can't be dismissed manually — A/B are ignored, it just runs out its own clock.
+        s_blankTimer -= deltaTime;
+        if (s_blankTimer <= 0.0f) {
+            PlaySFX(&audioManager, "assets/audio/sfx/textbox_proceed", 70, false);
+            s_active = false;
+            s_blank  = false;
+        }
+        return;
+    }
+
     if (Input_IsPressed(&inputManager, INPUT_A) || Input_IsPressed(&inputManager, INPUT_B)) {
         PlaySFX(&audioManager, "assets/audio/sfx/textbox_proceed", 70, false);
         s_active = false;

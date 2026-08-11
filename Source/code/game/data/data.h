@@ -105,7 +105,7 @@ static inline void SaveData_Init(SaveData* saveData) {
     saveData->playerData[1] = NULL;
     saveData->playerData[2] = NULL;
 
-    saveData->masterVol = 100;
+    saveData->masterVol = 80;
     saveData->musicVol = 100;
     saveData->sfxVol = 100;
     saveData->voxVol = 100;
@@ -154,7 +154,7 @@ static inline void PlayerData_Init(PlayerData* playerData) {
 
 SaveData
 
-masterVol=100
+masterVol=80
 musicVol=100
 sfxVol=100
 voxVol=100

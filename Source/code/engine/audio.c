@@ -94,6 +94,14 @@ static void PlaySample(AudioManager* manager,
 	source->isPlaying = true;
 }
 
+static void StopSampleSource(AudioSource* sources, u8 count, cstr path) {
+	if (sources == NULL || path == NULL) return;
+	AudioSource* source = FindSampleSource(sources, count, path);
+	if (source == NULL || source->player == NULL) return;
+	pd->sound->sampleplayer->stop(source->player);
+	source->isPlaying = false;
+}
+
 static void StopAllSampleSources(AudioSource* sources, u8 count) {
 	if (sources == NULL || pd == NULL) return;
 
@@ -163,7 +171,7 @@ void Audio_InitManager(AudioManager* manager) {
 	memset(manager, 0, sizeof(AudioManager));
 	manager->currentModIndex = -1;
 
-	manager->masterVol = 100;
+	manager->masterVol = 80;
 	manager->modVol = 100;
 	manager->sfxVol = 100;
 	manager->voxVol = 100;
@@ -342,6 +350,11 @@ void PlayVox(AudioManager* manager, cstr path, u8 volume, bool loop) {
 void PlayAmb(AudioManager* manager, cstr path, u8 volume, bool loop) {
 	if (manager == NULL) return;
 	PlaySample(manager, manager->amb, &manager->ambCount, AUDIO_AMB, path, volume, loop, manager->ambVol);
+}
+
+void StopSFX(AudioManager* manager, cstr path) {
+	if (manager == NULL) return;
+	StopSampleSource(manager->sfx, manager->sfxCount, path);
 }
 
 void StopAllSFX(AudioManager* manager) {
