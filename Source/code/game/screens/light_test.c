@@ -196,6 +196,8 @@ void LightTestScreen_Update(f32 deltaTime) {
 
     if (Input_IsPressed(&inputManager, INPUT_B))
         SwitchScreen(&screenManager, SS_TEST_4);
+    if (Input_IsPressed(&inputManager, INPUT_UP))
+        SwitchScreen(&screenManager, SS_TEST_7);
 }
 
 void LightTestScreen_Draw(void) {

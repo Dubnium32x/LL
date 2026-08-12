@@ -17,10 +17,6 @@ static const f32 FADE_DURATION = 1.5f;
 static const f32 DISPLAY_DURATION = 5.5f;
 
 static LCDBitmap* logoBitmap = NULL;
-// static LCDBitmap* lincolnBitmap = NULL;
-// static f32 lincolnX = 0.0f;
-// static f32 lincolnSpeed = 80.0f; // pixels per second
-// static bool lincolnVisible = false;
 
 void SplashScreen_Init(void) {
     currentState = SPLASH_STATE_FADING_IN;
@@ -113,12 +109,4 @@ void SplashScreen_Unload(void) {
         Asset_FreeBitmap(logoBitmap);
         logoBitmap = NULL;
     }
-    
-    // if (lincolnBitmap) {
-    //     pd->graphics->freeBitmap(lincolnBitmap);
-    //     lincolnBitmap = NULL;
-    // }
-    
-    // Clear any fade effects if needed
-    // ClearScreenFades(&screenManager);
 }

@@ -27,6 +27,8 @@ typedef enum {
     SS_TEST_4,
     SS_TEST_5,
     SS_TEST_6,
+    SS_TEST_7,
+    SS_TEST_8,
 
     SS_COUNT
 } ScreenState;
@@ -52,6 +54,8 @@ static inline cstr GetScreenStateName(ScreenState state) {
         case SS_TEST_4: return "TEST_4";
         case SS_TEST_5: return "TEST_5";
         case SS_TEST_6: return "TEST_6";
+        case SS_TEST_7: return "TEST_7";
+        case SS_TEST_8: return "TEST_8";
         default: return "UNKNOWN";
     }
 }

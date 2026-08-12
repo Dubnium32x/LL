@@ -24,6 +24,8 @@
 #include <game/screens/title.h>
 #include <game/screens/title.h>
 #include <game/screens/light_test.h>
+#include <game/screens/enemy_test.h>
+#include <game/screens/outline_test.h>
 
 PlaydateAPI* pd = NULL;
 LCDFont* fontFamily[5] = {0};
@@ -187,7 +189,19 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
                        LightTestScreen_Init,
                        LightTestScreen_Update,
                        LightTestScreen_Draw,
-                       LightTestScreen_Unload); 
+                       LightTestScreen_Unload);
+        RegisterScreen(&screenManager,
+                       SS_TEST_7,
+                       EnemyTestScreen_Init,
+                       EnemyTestScreen_Update,
+                       EnemyTestScreen_Draw,
+                       EnemyTestScreen_Unload);
+        RegisterScreen(&screenManager,
+                       SS_TEST_8,
+                       OutlineTestScreen_Init,
+                       OutlineTestScreen_Update,
+                       OutlineTestScreen_Draw,
+                       OutlineTestScreen_Unload);
         RegisterScreen(&screenManager,
                        SS_INIT,
                        InitScreen_Init,
@@ -215,7 +229,7 @@ int eventHandler(PlaydateAPI* playdate, PDSystemEvent event, uint32_t arg) {
                        TitleScreen_Draw,
                        TitleScreen_Unload);
 
-        SwitchScreen(&screenManager, SS_TEST_4);
+        SwitchScreen(&screenManager, SS_INIT);
 
         pd->system->setUpdateCallback(Update, NULL);
     }

@@ -15,8 +15,6 @@ static i8 FindSequenceIndex(const AnimationSet* set, cstr name) {
     return -1;
 }
 
-// ---- AnimationSet: shared library + bitmap table ----
-
 void AnimSet_Init(AnimationSet* set) {
     if (set == NULL) return;
     memset(set, 0, sizeof(AnimationSet));
